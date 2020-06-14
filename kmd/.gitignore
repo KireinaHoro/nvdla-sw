@@ -4,5 +4,6 @@
 *.order
 *.ko
 *.mod.c
+*.mod
 .*.cmd
 .*.swp
