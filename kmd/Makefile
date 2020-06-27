@@ -24,10 +24,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-KDIR ?= /lib/modules/`uname -r`/build
+KDIR ?= $(KERNEL_SRC)
 
 .PHONY: default
 default: modules
 
 %:
 	$(MAKE) -C $(KDIR) M=$$PWD $@
+
+clean:
+	rm -f *.o *~ core .depend .*.cmd *.ko *.mod.c
+	rm -f Module.markers Module.symvers modules.order
+	rm -rf .tmp_versions Modules.symvers
