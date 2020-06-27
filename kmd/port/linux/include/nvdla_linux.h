@@ -41,6 +41,24 @@
 #include <linux/platform_device.h>
 #include <linux/spinlock.h>
 
+#include <linux/dma-buf.h>
+#include <linux/dma-mapping.h>
+#include <linux/fs.h>
+#include <linux/interrupt.h>
+#include <linux/irq.h>
+#include <linux/irqdomain.h>
+#include <linux/module.h>
+#include <linux/of.h>
+#include <linux/of_address.h>
+#include <linux/of_device.h>
+#include <linux/of_irq.h>
+#include <linux/of_platform.h>
+#include <linux/platform_device.h>
+#include <linux/printk.h>
+#include <linux/slab.h>
+#include <linux/spinlock.h>
+#include <linux/time.h>
+#include <linux/uaccess.h>
 /**
  * @brief			Task information submitted from user space
  *
@@ -98,6 +116,9 @@ struct nvdla_device {
 	struct nvdla_config *config_data;
 	struct platform_device *pdev;
 	struct completion event_notifier;
+
+	uint64_t dma_base;
+	uint64_t dma_len;
 
 	void *engine_context;
 };

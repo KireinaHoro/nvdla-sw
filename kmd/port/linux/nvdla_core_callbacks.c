@@ -366,6 +366,8 @@ static int32_t nvdla_probe(struct platform_device *pdev)
 	struct resource *res;
 	struct nvdla_device *nvdla_dev;
 	struct device *dev = &pdev->dev;
+	struct device_node *np = dev->of_node;
+	struct device_node *dma_region;
 	const struct of_device_id *match;
 
 	if (!pdev->dev.of_node)
@@ -400,6 +402,22 @@ static int32_t nvdla_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 	nvdla_dev->irq = res->start;
+
+	dma_region = of_parse_phandle(np, "memory-region", 0);
+	if (dma_region) {
+		struct resource r;
+		err = of_address_to_resource(dma_region, 0, &r);
+		of_node_put(dma_region);
+		if (err)
+			return err;
+		nvdla_dev->dma_base = r.start;
+		nvdla_dev->dma_len = r.end - r.start;
+
+		dla_info("using DMA region: [0x%lx-0x%lx]\n", r.start, r.end);
+	} else {
+		dev_err(&pdev->dev, "no dma region\n");
+		return -EINVAL;
+	}
 
 	err = devm_request_irq(&pdev->dev, nvdla_dev->irq,
 				nvdla_engine_isr, 0,
