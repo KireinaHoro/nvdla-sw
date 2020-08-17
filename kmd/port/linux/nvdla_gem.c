@@ -33,6 +33,7 @@
  */
 
 #include <drm/drm.h>
+#include <drm/drm_drv.h>
 #include <drm/drm_gem_cma_helper.h>
 
 #include <nvdla_linux.h>
@@ -205,7 +206,7 @@ nvdla_gem_create_with_handle(struct drm_file *file_priv,
 	if (ret)
 		goto free_drm_object;
 
-	drm_gem_object_unreference_unlocked(dobj);
+	drm_gem_object_put_unlocked(dobj);
 
 	return nobj;
 
@@ -352,7 +353,7 @@ static int32_t nvdla_gem_map_offset(struct drm_device *drm, void *data,
 	args->offset = drm_vma_node_offset_addr(&dobj->vma_node);
 
 out:
-	drm_gem_object_unreference_unlocked(dobj);
+	drm_gem_object_put_unlocked(dobj);
 
 	return 0;
 }
@@ -387,7 +388,7 @@ static const struct drm_ioctl_desc nvdla_drm_ioctls[] = {
 };
 
 static struct drm_driver nvdla_drm_driver = {
-	.driver_features = DRIVER_GEM | DRIVER_PRIME | DRIVER_RENDER,
+	.driver_features = DRIVER_GEM | DRIVER_RENDER,
 
 	.gem_vm_ops = &drm_gem_cma_vm_ops,
 
@@ -433,7 +434,7 @@ int32_t nvdla_drm_probe(struct nvdla_device *nvdla_dev)
 		goto unref;
 
 	ret = dma_declare_coherent_memory(drm->dev, nvdla_dev->dma_base,
-			nvdla_dev->dma_base, nvdla_dev->dma_len, DMA_MEMORY_EXCLUSIVE);
+			nvdla_dev->dma_base, nvdla_dev->dma_len);
 	if (ret) {
 		err = -ENOMEM;
 		goto unref;
@@ -442,13 +443,12 @@ int32_t nvdla_drm_probe(struct nvdla_device *nvdla_dev)
 	return 0;
 
 unref:
-	drm_dev_unref(drm);
+	drm_dev_put(drm);
 	return err;
 }
 
 void nvdla_drm_remove(struct nvdla_device *nvdla_dev)
 {
 	drm_dev_unregister(nvdla_dev->drm);
-	dma_release_declared_memory(&nvdla_dev->pdev->dev);
-	drm_dev_unref(nvdla_dev->drm);
+	drm_dev_put(nvdla_dev->drm);
 }

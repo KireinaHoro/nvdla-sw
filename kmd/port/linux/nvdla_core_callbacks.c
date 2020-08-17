@@ -133,6 +133,8 @@ void dla_reg_write(void *driver_context, uint32_t addr, uint32_t reg)
 	if (!nvdla_dev)
 		return;
 
+    printk("write %#x <- %#x", addr, reg);
+
 	writel(reg, nvdla_dev->base + addr);
 }
 
@@ -140,11 +142,16 @@ uint32_t dla_reg_read(void *driver_context, uint32_t addr)
 {
 	struct nvdla_device *nvdla_dev =
 			(struct nvdla_device *)driver_context;
+    uint32_t data;
 
 	if (!nvdla_dev)
 		return 0;
 
-	return readl(nvdla_dev->base + addr);
+	data = readl(nvdla_dev->base + addr);
+
+    printk("read  %#x -> %#x", addr, data);
+
+    return data;
 }
 
 static irqreturn_t nvdla_engine_isr(int32_t irq, void *data)
